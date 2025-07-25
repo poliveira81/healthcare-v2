@@ -1,13 +1,12 @@
 {
   "name": "outsystems-mcp-server",
-  "version": "0.1.0",
-  "description": "MCP Server to call OutSystems Mentor and generate OutSystems apps from anywhere.",
-  "main": "dist/index.js",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/mcpServer.js",
   "scripts": {
-    "start": "ts-node src/index.ts",
-    "start:mcp": "ts-node src/mcpServer.ts", 
+    "start": "ts-node src/mcpServer.ts",
     "build": "tsc",
-    "test": "jest"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "joao.carvalho-OutSystems",
   "license": "MIT",
@@ -24,6 +23,8 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "pkce-challenge": "^5.0.0"
+    "amazon-cognito-identity-js": "^6.3.15",
+    "pkce-challenge": "^5.0.0",
+    "vscode-jsonrpc": "^8.2.1"
   }
 }

@@ -65,14 +65,14 @@ async function cognitoLogin(username: string, password: string) {
 
   return new Promise<{ cognitoAccessToken: string; cognitoRefreshToken: string; cognitoIdToken: string }>((resolve, reject) => {
     cognitoUser.authenticateUser(authDetails, {
-      onSuccess: (result) => {
+      onSuccess: (result: any) => {
         resolve({
           cognitoAccessToken: result.getAccessToken().getJwtToken(),
           cognitoRefreshToken: result.getRefreshToken().getToken(),
           cognitoIdToken: result.getIdToken().getJwtToken(),
         });
       },
-      onFailure: (err) => {
+      onFailure: (err: any) => {
         reject(err);
       },
       newPasswordRequired: () => {
