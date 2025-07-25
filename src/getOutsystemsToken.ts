@@ -1,10 +1,11 @@
 import axios from 'axios';
-import pkceChallenge from 'pkce-challenge';
+//import pkceChallenge from 'pkce-challenge';
 import { URL, URLSearchParams } from 'url';
 import { CognitoUserPool, CognitoUser, AuthenticationDetails } from 'amazon-cognito-identity-js';
 import { OS_HOSTNAME, OS_USERNAME, OS_PASSWORD } from './config';
 
 
+const pkceChallenge = require('pkce-challenge');
 const hostname = OS_HOSTNAME;
 const username = OS_USERNAME;
 const password = OS_PASSWORD;

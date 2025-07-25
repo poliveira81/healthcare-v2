@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "start": "ts-node src/index.ts",
+    "start:mcp": "ts-node src/mcpServer.ts", 
     "build": "tsc",
     "test": "jest"
   },
@@ -23,7 +24,6 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "amazon-cognito-identity-js": "^6.3.15",
     "pkce-challenge": "^5.0.0"
   }
 }
