@@ -1,0 +1,4 @@
+{
+  "mentorApiUrl": "https://api.outsystems.com/mentor",
+  "serverPort": 3000
+}
