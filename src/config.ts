@@ -1,10 +1,15 @@
-import fs from 'fs';
-import path from 'path';
+/**
+ * =================================================================
+ * IMPORTANT: Configuration File
+ * =================================================================
+ * This file contains sensitive credentials.
+ * Do not commit this file to a public Git repository.
+ *
+ * It is recommended to use environment variables in a real-world
+ * production environment.
+ */
 
-const configPath = path.resolve(__dirname, '..', 'config.json');
-const raw = fs.readFileSync(configPath, 'utf-8');
-const config = JSON.parse(raw);
-
-export const OS_HOSTNAME = config.hostname as string;
-export const OS_USERNAME = config.username as string;
-export const OS_PASSWORD = config.password as string;
+// Replace these placeholder values with your actual OutSystems credentials.
+export const OS_HOSTNAME = 'env.outsystems.dev';
+export const OS_USERNAME = 'your.email@mail.com';
+export const OS_PASSWORD = 'your_password';

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { getAuthToken } from './getOutsystemsToken';
+import { getOutsystemsToken } from './getOutsystemsToken';
 import { OS_HOSTNAME, OS_USERNAME, OS_PASSWORD } from './config';
 import { Router } from 'express';
 
@@ -9,7 +9,7 @@ const password = OS_PASSWORD!;
 
 // Utility to get the Authorization header
 async function getAuthHeader(): Promise<{ Authorization: string }> {
-  const access = await getAuthToken(username, password);
+  const access = await getOutsystemsToken();
   return { Authorization: `Bearer ${access}` };
 }
 
