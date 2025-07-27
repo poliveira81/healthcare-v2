@@ -1,118 +1,114 @@
-import { getOutsystemsToken } from './getOutsystemsToken';
+/**
+ * MCP Server for OutSystems App Generation
+ * Communicates via stdio for integration with Perplexity.
+ */
 import { createMessageConnection, StreamMessageReader, StreamMessageWriter } from 'vscode-jsonrpc/node';
+import { getOutsystemsToken } from './getOutsystemsToken';
+import { OS_HOSTNAME } from './config';
 
-// --- Token Caching Logic ---
-
-let cachedAccessToken: string | null = null;
+// --- Token Caching ---
+let accessToken: string | null = null;
 let tokenPromise: Promise<string> | null = null;
 
-/**
- * A helper function to manage the cached token.
- * It fetches a new token only if one isn't already stored,
- * and handles concurrent requests for a token while one is being fetched.
- */
-function getCachedAccessToken(): Promise<string> {
-    if (cachedAccessToken) {
-        console.error('[CACHE] Reusing existing access token.');
-        return Promise.resolve(cachedAccessToken);
+async function getCachedAccessToken(): Promise<string> {
+    if (accessToken) { return accessToken; }
+    if (tokenPromise) { return tokenPromise; }
+
+    tokenPromise = getOutsystemsToken();
+    try {
+        const newAccessToken = await tokenPromise;
+        accessToken = newAccessToken;
+        return newAccessToken;
+    } catch (error) {
+        accessToken = null; // Clear on failure
+        throw error;
+    } finally {
+        tokenPromise = null;
     }
-
-    if (tokenPromise) {
-        console.error('[CACHE] A token is already being fetched, awaiting result...');
-        return tokenPromise;
-    }
-
-    console.error('[CACHE] No token in cache, fetching a new one...');
-    tokenPromise = getOutsystemsToken()
-        .then(newAccessToken => {
-            console.error('[CACHE] Successfully fetched and cached new token.');
-            cachedAccessToken = newAccessToken;
-            tokenPromise = null; // Clear the promise once resolved
-            return newAccessToken;
-        })
-        .catch(err => {
-            console.error('[CACHE] Failed to fetch token:', err);
-            tokenPromise = null; // Clear the promise on failure
-            throw err; // Re-throw the error so callers can handle it
-        });
-
-    return tokenPromise;
 }
 
-// --- JSON-RPC Server Setup ---
+// --- Fetch Utility ---
+async function fetchWithTimeout(url: string, options: RequestInit = {}, timeout = 20000) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+    options.signal = controller.signal;
 
-console.error('[SERVER] Initializing MCP Server...');
-const connection = createMessageConnection(
-    new StreamMessageReader(process.stdin),
-    new StreamMessageWriter(process.stdout)
-);
-
-// --- Register Request Handlers ---
-
-connection.onRequest('tool/startOutsystemsAppGeneration', async (params: any) => {
     try {
-        console.error(`[HANDLER] Received 'startOutsystemsAppGeneration' with params:`, params);
-        const token = await getCachedAccessToken();
-        const response = await fetch(`https://${params.hostname}/api/app-generation/v1alpha3/jobs`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                prompt: params.prompt,
-                files: [],
-                ignoreTenantContext: true
-            }),
-        });
-        return await response.json();
-    } catch (error: any) {
-        console.error(`[ERROR] in 'startOutsystemsAppGeneration':`, error.message);
-        return { error: { code: -32000, message: `Server error: ${error.message}` } };
+        return await fetch(url, options);
+    } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') {
+            throw new Error(`Request timed out after ${timeout / 1000} seconds`);
+        }
+        throw error;
+    } finally {
+        clearTimeout(timeoutId);
     }
-});
+}
 
-connection.onRequest('tool/getOutsystemsJobStatus', async (params: any) => {
-    try {
-        console.error(`[HANDLER] Received 'getOutsystemsJobStatus' with params:`, params);
-        const token = await getCachedAccessToken();
-        const response = await fetch(`https://${params.hostname}/api/app-generation/v1alpha3/jobs/${params.jobId}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        return await response.json();
-    } catch (error: any) {
-        console.error(`[ERROR] in 'getOutsystemsJobStatus':`, error.message);
-        return { error: { code: -32000, message: `Server error: ${error.message}` } };
-    }
-});
+// --- Main Server Logic ---
+async function main() {
+    console.error('[SERVER] Initializing MCP Server...');
+    const connection = createMessageConnection(
+        new StreamMessageReader(process.stdin),
+        new StreamMessageWriter(process.stdout)
+    );
 
-connection.onRequest('tool/generateOutsystemsApp', async (params: any) => {
-    try {
-        console.error(`[HANDLER] Received 'generateOutsystemsApp' with params:`, params);
-        const token = await getCachedAccessToken();
-        const response = await fetch(`https://${params.hostname}/api/app-generation/v1alpha3/jobs/${params.jobId}/generation`, {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        return await response.json();
-    } catch (error: any) {
-        console.error(`[ERROR] in 'generateOutsystemsApp':`, error.message);
-        return { error: { code: -32000, message: `Server error: ${error.message}` } };
-    }
-});
-
-
-// --- Start Server and Pre-warm Cache ---
-
-// 1. Start listening for JSON-RPC messages IMMEDIATELY.
-connection.listen();
-console.error('[SERVER] MCP connection listener is now active. Ready for handshake.');
-
-// 2. Begin pre-warming the token cache in the background.
-getCachedAccessToken()
-    .then(() => {
-        console.error('[SERVER] Token cache pre-warmed successfully.');
-    })
-    .catch(error => {
-        console.error('[SERVER] FATAL: Failed to pre-warm token cache on startup. The server may not function correctly.', error);
+    // --- HANDLER: Start Job ---
+    connection.onRequest('tool/startOutsystemsAppGeneration', async (params: { prompt: string }) => {
+        try {
+            const token = await getCachedAccessToken();
+            const apiUrl = `https://${OS_HOSTNAME}/api/app-generation/v1alpha3/jobs`;
+            const response = await fetchWithTimeout(apiUrl, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt: params.prompt, files: [], ignoreTenantContext: true })
+            });
+            if (!response.ok) throw new Error(`API Error: ${response.status} ${await response.text()}`);
+            return await response.json();
+        } catch (error) {
+            const msg = error instanceof Error ? error.message : String(error);
+            return { error: `Failed to start job: ${msg}` };
+        }
     });
+
+    // --- HANDLER: Get Status ---
+    connection.onRequest('tool/getOutsystemsJobStatus', async (params: { key: string }) => {
+        try {
+            const token = await getCachedAccessToken();
+            const apiUrl = `https://${OS_HOSTNAME}/api/app-generation/v1alpha3/jobs/${params.key}`;
+            const response = await fetchWithTimeout(apiUrl, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!response.ok) throw new Error(`API Error: ${response.status} ${await response.text()}`);
+            return await response.json();
+        } catch (error) {
+            const msg = error instanceof Error ? error.message : String(error);
+            return { error: `Failed to get job status: ${msg}` };
+        }
+    });
+
+    // --- HANDLER: Trigger Generation ---
+    connection.onRequest('tool/generateOutsystemsApp', async (params: { key: string }) => {
+        try {
+            const token = await getCachedAccessToken();
+            const apiUrl = `https://${OS_HOSTNAME}/api/app-generation/v1alpha3/jobs/${params.key}/generation`;
+            const response = await fetchWithTimeout(apiUrl, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!response.ok) throw new Error(`API Error: ${response.status} ${await response.text()}`);
+            return await response.json();
+        } catch (error) {
+            const msg = error instanceof Error ? error.message : String(error);
+            return { error: `Failed to trigger generation: ${msg}` };
+        }
+    });
+
+    // Pre-warm cache in the background
+    getCachedAccessToken().catch(err => console.error(`[SERVER] Failed to pre-warm token cache: ${err.message}`));
+
+    connection.listen();
+    console.error('[SERVER] MCP Server is running and listening on stdio.');
+}
+
+main();
