@@ -6,3 +6,4 @@ dist/
 *config.ts
 src/config copy.ts
 src/config.ts
+bash-tests/test.sh
