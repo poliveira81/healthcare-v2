@@ -21,6 +21,20 @@ export const OS_PASSWORD = 'your-secret-password';
 export const OS_DEV_ENVID = 'youdev-env-stageid-uuid-key';
 ```
 
+### Finding your `OS_DEV_ENVID`
+
+You can find this key by navigating to the ODC Portal for your environment.
+
+1.  Go to `https://<your-hostname>/apps` (e.g., `https://your-org-name.outsystems.dev/apps`).
+2.  Click on any existing application to view its details.
+3.  Look at the URL in your browser's address bar.
+4.  Find the `stageid` parameter and copy its value (the UUID).
+
+For example, in the URL:
+`.../stageid=f39f6d4d-439f-4776-b549-71e3ddd16522`
+
+The `OS_DEV_ENVID` would be `f39f6d4d-439f-4776-b549-71e3ddd16522`.
+
 ## Getting Started
 
 Follow these steps to get the server running.
@@ -46,7 +60,7 @@ npm run build
 Once the project is built, you can run the MCP server. To test it locally and see the logs, you can run the compiled file directly with Node.js:
 
 ```bash
-node dist/src/mcpServer.js
+node dist/mcpServer.js
 ```
 
 You should see output in your terminal indicating that the server has started, initialized the connection listener, and successfully pre-warmed the authentication token cache.
@@ -86,9 +100,15 @@ You will see a live log of the client connecting to the server, starting the job
 
 The MCP server exposes the following tools that can be called from a connected client:
 
-* **`tool/startOutsystemsAppGeneration`**: Creates a new application generation job.
+* **`tool/startGeneration`**: Creates a new application generation job.
     * **Parameters**: `prompt` (string)
-* **`tool/getOutsystemsJobStatus`**: Checks the status of an ongoing generation job.
-    * **Parameters**: `jobId` (string)
-* **`tool/generateOutsystemsApp`**: Triggers the final application generation for a created job.
-    * **Parameters**: `jobId` (string)
+* **`tool/getStatus`**: Checks the status of an ongoing generation job.
+    * **Parameters**: `sessionId` (string)
+* **`tool/triggerGeneration`**: Triggers the final application build for a created job.
+    * **Parameters**: `sessionId` (string)
+* **`tool/startPublication`**: Starts the publication process for a generated app.
+    * **Parameters**: `applicationKey` (string)
+* **`tool/getPublicationStatus`**: Checks the status of an ongoing publication.
+    * **Parameters**: `publicationKey` (string)
+* **`tool/getApplicationDetails`**: Gets the final details and URL of a published app.
+    * **Parameters**: `applicationKey` (string)
