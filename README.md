@@ -11,12 +11,14 @@ Once you have your credentials, you must configure them in the `src/config.ts` f
 * `OS_HOSTNAME`: The URL of your OutSystems Developer Cloud (ODC) portal. **Note:** This should be the full hostname, for example: `your-org-name.outsystems.dev`.
 * `OS_USERNAME`: The username for your ODC account.
 * `OS_PASSWORD`: The password for your ODC account.
+* `OS_DEV_ENVID`: The stageid key for your dev env where the app is going to be created.
 
 ```typescript
 // src/config.ts
 export const OS_HOSTNAME = 'your-org-name.outsystems.dev';
 export const OS_USERNAME = 'your-email@example.com';
 export const OS_PASSWORD = 'your-secret-password';
+export const OS_DEV_ENVID = 'youdev-env-stageid-uuid-key';
 ```
 
 ## Getting Started
@@ -61,7 +63,7 @@ For example:
 ```json
 {
   "args" : [
-    "/Users/your-username/Projects/outsystems-mcp-server/dist/src/mcpServer.js"
+    "/Users/your-username/Projects/outsystems-mcp-server/dist/mcpServer.js"
   ],
   "command" : "node",
   "env" : {}

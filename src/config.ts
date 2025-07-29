@@ -13,3 +13,4 @@
 export const OS_HOSTNAME = 'env.outsystems.dev';
 export const OS_USERNAME = 'your.email@mail.com';
 export const OS_PASSWORD = 'your_password';
+export const OS_DEV_ENVID = 'youdev-env-stageid-uuid-key';
