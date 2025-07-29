@@ -4,4 +4,5 @@ dist/
 .env
 *.log
 *config.ts
+src/config copy.ts
 src/config.ts
