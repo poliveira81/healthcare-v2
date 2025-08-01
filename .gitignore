@@ -7,3 +7,4 @@ dist/
 src/config copy.ts
 src/config.ts
 bash-tests/test.sh
+.DS_Store
