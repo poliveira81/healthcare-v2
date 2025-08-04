@@ -1,9 +1,9 @@
 // src/outsystems-service.ts
 
-import { OS_HOSTNAME } from './config';
-import { getOutsystemsToken } from './getOutsystemsToken';
+import { getOutsystemsToken } from './getOutsystemsToken.js';
 import { v4 as uuidv4 } from 'uuid';
 
+const { OS_HOSTNAME, OS_USERNAME, OS_PASSWORD, OS_DEV_ENVID } = process.env;
 // --- Caching and State Management ---
 let tokenCache = {
     token: null as string | null,

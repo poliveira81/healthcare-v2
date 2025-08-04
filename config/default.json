@@ -1,4 +1,10 @@
 {
-  "mentorApiUrl": "https://api.outsystems.com/mentor",
-  "serverPort": 3000
+  "mcpServers": {
+    "outsystems-generator": {
+      "command": "node",
+      "args": [
+        "/Users/joao.carvalho/Projects/outsystems-mcp-server/build/server.js"
+      ]
+    }
+  }
 }
