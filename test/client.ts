@@ -13,7 +13,7 @@ import {
 } from 'vscode-jsonrpc/node';
 import { spawn, ChildProcess } from 'child_process';
 import * as path from 'path';
-import { OS_HOSTNAME } from '../src/config';
+const { OS_HOSTNAME } = process.env;
 
 // --- Type Definitions for RPC Responses ---
 type StartGenerationResponse = { sessionId?: string; status?: string; error?: string; };
@@ -126,6 +126,9 @@ async function runTest() {
         if (appDetails.error || !appDetails.urlPath) throw new Error(`Server error getting app details: ${appDetails.error || 'Missing urlPath'}`);
         
         // Transform the hostname to get the correct application URL format.
+        if (!OS_HOSTNAME) {
+             throw new Error("Missing required environment variables.");
+        }
         const appHostname = OS_HOSTNAME.replace('.outsystems.dev', '-dev.outsystems.app');
         const appUrl = `https://${appHostname}/${appDetails.urlPath}`;
         

@@ -4,7 +4,6 @@ import {
   AuthenticationDetails,
 } from "amazon-cognito-identity-js";
 import axios from "axios";
-import { wrapper as axiosCookieJarSupport } from "axios-cookiejar-support";
 import { CookieJar } from "tough-cookie";
 import pkceChallenge from "pkce-challenge";
 import { URLSearchParams, URL } from "url";
@@ -50,6 +49,10 @@ async function cognitoLogin(
  */
 export const getOutsystemsToken = async (): Promise<string> => {
   try {
+
+    const { wrapper: axiosCookieJarSupport } = await import('axios-cookiejar-support');
+
+
     // Create an axios instance that supports cookies to maintain session state
     const jar = new CookieJar();
     const session = axiosCookieJarSupport(axios.create());

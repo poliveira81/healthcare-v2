@@ -3,8 +3,9 @@
     "outsystems-generator": {
       "command": "node",
       "args": [
-        "/Users/joao.carvalho/Projects/outsystems-mcp-server/build/server.js"
-      ]
+        "/Users/joao.carvalho/Projects/outsystems-mcp-server/dist/stdio-server.js"
+      ],
+      "autoApprove": ["createOutSystemsApp"]  
     }
   }
 }
