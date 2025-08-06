@@ -40,15 +40,42 @@ async function handleRequest(request: any) {
         serverInfo: {
           name: "outsystems-app-generator",
           displayName: "OutSystems App Generator",
-          version: "2.0.0"
+          version: "2.0.0",
         },
-        capabilities: {},
-        tools: Object.values(tools).map((tool) => ({
-          name: tool.name,
-          description: tool.description,
-          input_schema: zodToJsonSchema(tool.input_schema, { target: 'jsonSchema7' }),
-        })),
+        capabilities: {
+          tools: {
+            values: Object.values(tools).map((tool) => ({
+              name: tool.name,
+              description: tool.description,
+              inputSchema: zodToJsonSchema(tool.input_schema),
+            })),
+          },
+        },
       });
+
+      writeResponse(request.id, {
+        protocolVersion: clientRequestedVersion,
+        serverInfo: {
+          name: "outsystems-app-generator",
+          displayName: "OutSystems App Generator",
+          version: "2.0.0",
+        },
+        capabilities: {
+          tools: {
+            values: Object.values(tools).map((tool) => {
+              const rawSchema = zodToJsonSchema(tool.input_schema);
+              delete rawSchema.$schema;
+
+              return {
+                name: tool.name,
+                description: tool.description,
+                inputSchema: rawSchema,
+              };
+            }),
+          },
+        },
+      });
+
       break;
 
     case 'tool/execute':

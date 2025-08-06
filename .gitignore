@@ -9,3 +9,4 @@ src/config.ts
 bash-tests/test.sh
 .DS_Store
 build/*
+config/initialize.json

@@ -33,3 +33,37 @@ const initializeMsg = {
 
 console.log("[CLIENT]", "Sending initialize:", JSON.stringify(initializeMsg));
 server.stdin.write(JSON.stringify(initializeMsg) + "\n");
+
+// 2. After a delay, send tool/execute with your desired input
+setTimeout(() => {
+  const toolExecuteMsg = {
+    jsonrpc: "2.0",
+    id: 1,
+    method: "tool/execute",
+    params: {
+      tool_name: "createOutSystemsApp",
+      executionId: "exec-timetracking-" + Date.now(), // unique per test
+      input: {
+        description: "A time tracking app for a software delivery team working on multiple projects."
+      }
+    }
+  };
+  console.log("[CLIENT] Sending tool/execute:", JSON.stringify(toolExecuteMsg));
+  server.stdin.write(JSON.stringify(toolExecuteMsg) + "\n");
+}, 500); // Wait 500ms after initialize (adjust as needed)
+
+// 3. After another delay, send a shutdown request
+setTimeout(() => {
+  console.log("[CLIENT] Sending shutdown request");
+const shutdownMsg = {
+  jsonrpc: "2.0",
+  id: 1,
+  method: "shutdown",
+  params: {}
+};
+server.stdin.write(JSON.stringify(shutdownMsg) + "\n");
+
+// Optional: close stdin so the server process knows it won't get more input
+server.stdin.end();
+}, 240000); // Wait 4 mintues before shutdown (adjust as needed)
+
