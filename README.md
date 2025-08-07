@@ -2,6 +2,13 @@
 
 This is a Model Context Protocol (MCP) server that generates OutSystems applications from a text prompt. It is designed to be used with MCP clients like Raycast and Perplexity, or as a standalone HTTP API.
 
+## Demo
+
+<video controls width="600">
+  <source src="./demos/MCP Server Demo.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+
 ## Architecture
 
 The server is built with TypeScript and uses the official `@modelcontextprotocol/sdk` for handling MCP communication. It exposes a single tool, `createOutSystemsApp`, which generates and deploys an OutSystems application from a prompt. The tool is implemented as an async generator, streaming progress updates to the client. All OutSystems API logic is modularized for maintainability.
