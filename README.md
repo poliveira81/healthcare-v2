@@ -1,114 +1,147 @@
 # OutSystems MCP Server
 
-This project provides a local MCP (Model Context Protocol) server that allows an LLM-based client, like Perplexity, to interact with the OutSystems platform. It exposes tools to create, monitor, and generate applications within an OutSystems Developer Cloud (ODC) portal.
+This is a Model Context Protocol (MCP) server that generates OutSystems applications from a text prompt. It is designed to be used with MCP clients like Raycast and Perplexity, or as a standalone HTTP API.
 
-## Configuration
+## Architecture
 
-To use this MCP server, you must provide your OutSystems environment credentials. If you do not have an OutSystems environment, sign up for a free one at [https://www.outsystems.com/Platform/Signup](https://www.outsystems.com/Platform/Signup).
+The server is built with TypeScript and uses the official `@modelcontextprotocol/sdk` for handling MCP communication. It exposes a single tool, `createOutSystemsApp`, which generates and deploys an OutSystems application from a prompt. The tool is implemented as an async generator, streaming progress updates to the client. All OutSystems API logic is modularized for maintainability.
 
-Once you have your credentials, you must configure them in the `src/config.ts` file. Open the file and set the following variables:
+## Project Structure
 
-* `OS_HOSTNAME`: The URL of your OutSystems Developer Cloud (ODC) portal. **Note:** This should be the full hostname, for example: `your-org-name.outsystems.dev`.
-* `OS_USERNAME`: The username for your ODC account.
-* `OS_PASSWORD`: The password for your ODC account.
-* `OS_DEV_ENVID`: The stageid key for your dev env where the app is going to be created.
-
-```typescript
-// src/config.ts
-export const OS_HOSTNAME = 'your-org-name.outsystems.dev';
-export const OS_USERNAME = 'your-email@example.com';
-export const OS_PASSWORD = 'your-secret-password';
-export const OS_DEV_ENVID = 'youdev-env-stageid-uuid-key';
+```text
+.
+├── .env.example
+├── package.json
+├── tsconfig.json
+└── src/
+    ├── stdio-server.ts         # Main MCP stdio server entry point
+    ├── index.ts                # Optional HTTP API server (for testing/dev)
+    ├── tools/
+    │   └── outsystems-tool.ts  # MCP tool definition
+    ├── services/
+    │   ├── outsystems-api.ts   # OutSystems API logic
+    │   └── token-manager.ts    # Token management
+    └── utils/
+        └── getOutsystemsToken.ts # Token utility
 ```
 
-### Finding your `OS_DEV_ENVID`
-
-You can find this key by navigating to the ODC Portal for your environment.
-
-1.  Go to `https://<your-hostname>/apps` (e.g., `https://your-org-name.outsystems.dev/apps`).
-2.  Click on any existing application to view its details.
-3.  Look at the URL in your browser's address bar.
-4.  Find the `stageid` parameter and copy its value (the UUID).
-
-For example, in the URL:
-`.../stageid=f39f6d4d-439f-4776-b549-71e3ddd16522`
-
-The `OS_DEV_ENVID` would be `f39f6d4d-439f-4776-b549-71e3ddd16522`.
+- `src/stdio-server.ts`: Main entry point for the MCP server (used by Raycast/Perplexity). Handles stdio transport and tool registration.
+- `src/index.ts`: Optional HTTP API server for local testing or integration.
+- `src/tools/outsystems-tool.ts`: Defines the `createOutSystemsApp` tool.
+- `src/services/outsystems-api.ts`: Contains the logic for interacting with the OutSystems platform.
+- `src/services/token-manager.ts`: Handles OutSystems API token caching and refresh.
 
 ## Getting Started
 
-Follow these steps to get the server running.
+### Prerequisites
 
-### 1. Install Dependencies
+- Node.js (v18 or higher)
+- npm
 
-First, install the required Node.js packages:
+### Installation
+
+1.  Clone the repository:
+    ```bash
+    git clone [https://github.com/joaomflcarvalho/OutSystems-mcp-server.git](https://github.com/joaomflcarvalho/OutSystems-mcp-server.git)
+    cd OutSystems-mcp-server
+    ```
+
+2.  Install the dependencies:
+    ```bash
+    npm install
+    ```
+
+3.  Build the project:
+    ```bash
+    npm run build
+    ```
+
+### Running the Server
+
+To start the MCP server (stdio mode, for Raycast/Perplexity):
 
 ```bash
-npm install
+npm start
 ```
 
-### 2. Build the Project
+This will compile the TypeScript code (if needed) and start the MCP server using stdio. The entry point is `dist/stdio-server.js`.
 
-This project uses TypeScript. You must compile the TypeScript code into JavaScript before running the server. The build process creates a `dist` folder containing the compiled output.
+For local HTTP API testing (optional):
 
 ```bash
-npm run build
+node dist/index.js
 ```
 
-### 3. Run the Server
+## OutSystems Configuration
 
-Once the project is built, you can run the MCP server. To test it locally and see the logs, you can run the compiled file directly with Node.js:
+**Best practice for Raycast and similar clients:**
+Set your OutSystems credentials directly in the `env` section of your MCP server configuration.
 
-```bash
-node dist/mcpServer.js
-```
+### Required Environment Variables
 
-You should see output in your terminal indicating that the server has started, initialized the connection listener, and successfully pre-warmed the authentication token cache.
+-   `OS_HOSTNAME`: The full URL of your OutSystems Developer Cloud (ODC) portal (e.g., `your-org-name.outsystems.dev`)
+-   `OS_USERNAME`: Your ODC account email/username
+-   `OS_PASSWORD`: Your ODC account password
+-   `OS_DEV_ENVID`: The UUID of your Dev environment stage (see below)
 
-### 4. Configure in Perplexity
+#### Finding your `OS_DEV_ENVID`
 
-To connect the server to Perplexity, you need to configure it in the application's settings.
+1.  Navigate to `https://<your-hostname>/apps` (e.g., `https://your-org-name.outsystems.dev/apps`).
+2.  Click on any application to open its details.
+3.  Look at the URL for a `stageid` parameter and copy its UUID value.
 
-* **Command**: `node`
-* **Args**: `[Absolute path to your compiled mcpServer.js file]`
+Example:
+`stageid=f39f6d4d-439f-4776-b549-71e3ddd16522`
 
-For example:
+## MCP Client Configuration
+
+### Raycast
+
+Add (or update) your MCP server block in the Raycast `mcp-config.json` like this:
 
 ```json
 {
-  "args" : [
-    "/Users/your-username/Projects/outsystems-mcp-server/dist/mcpServer.js"
-  ],
-  "command" : "node",
-  "env" : {}
+  "mcpServers": {
+    "outsystems-generator": {
+      "command": "node",
+      "args": [
+        "/path/to/your/project/OutSystems-mcp-server/dist/stdio-server.js"
+      ],
+      "env": {
+        "OS_HOSTNAME": "your-org-name.outsystems.dev",
+        "OS_USERNAME": "your-email@example.com",
+        "OS_PASSWORD": "your-secret-password",
+        "OS_DEV_ENVID": "your-dev-envid-uuid"
+      },
+      "autoApprove": ["createOutSystemsApp"]
+    }
+  }
 }
 ```
 
-### 5. Run the Test Client (Optional)
+**Note:**
+You do NOT need to use a local `.env` file when running under Raycast; all secrets and config can be passed directly with the `env` property.
 
-To test the entire workflow from your terminal, you can use the command-line client located at `test/client.ts`. This script will spawn the server, send a prompt, and display the step-by-step progress of the app generation. This is a great way to verify the server is working correctly or to record a demo.
+### Example .env File (for local testing or other deployment)
 
-To run the client, execute the following command in your terminal, replacing the example prompt with your own:
+If you want to test locally (outside of Raycast), create a `.env` file in your project root with the following content:
 
 ```bash
-npx ts-node test/client.ts "Generate an OutSystems app that tracks employee tasks."
+OS_HOSTNAME=your-org-name.outsystems.dev
+OS_USERNAME=your-email@example.com
+OS_PASSWORD=your-secret-password
+OS_DEV_ENVID=your-dev-envid-uuid
 ```
 
-You will see a live log of the client connecting to the server, starting the job, polling for status, and completing the generation.
+Then run the server:
 
-## Available Tools
+```bash
+npm start
+```
 
-The MCP server exposes the following tools that can be called from a connected client:
+## Notes
 
-* **`tool/startGeneration`**: Creates a new application generation job.
-    * **Parameters**: `prompt` (string)
-* **`tool/getStatus`**: Checks the status of an ongoing generation job.
-    * **Parameters**: `sessionId` (string)
-* **`tool/triggerGeneration`**: Triggers the final application build for a created job.
-    * **Parameters**: `sessionId` (string)
-* **`tool/startPublication`**: Starts the publication process for a generated app.
-    * **Parameters**: `applicationKey` (string)
-* **`tool/getPublicationStatus`**: Checks the status of an ongoing publication.
-    * **Parameters**: `publicationKey` (string)
-* **`tool/getApplicationDetails`**: Gets the final details and URL of a published app.
-    * **Parameters**: `applicationKey` (string)
+-   Only one tool is currently exposed: `createOutSystemsApp`.
+-   The codebase is modular and ready for additional tools or features.
+-   Progress updates and final URLs are streamed to the client according to the MCP protocol.
+-   You can still use a `.env` file for local testing; just make sure to load it with a library like `dotenv` at the top of your entry file.
