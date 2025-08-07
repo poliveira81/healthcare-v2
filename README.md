@@ -15,9 +15,6 @@ The server is built with TypeScript and uses the official `@modelcontextprotocol
 ├── tsconfig.json
 └── src/
     ├── stdio-server.ts         # Main MCP stdio server entry point
-    ├── index.ts                # Optional HTTP API server (for testing/dev)
-    ├── tools/
-    │   └── outsystems-tool.ts  # MCP tool definition
     ├── services/
     │   ├── outsystems-api.ts   # OutSystems API logic
     │   └── token-manager.ts    # Token management
@@ -26,8 +23,6 @@ The server is built with TypeScript and uses the official `@modelcontextprotocol
 ```
 
 - `src/stdio-server.ts`: Main entry point for the MCP server (used by Raycast/Perplexity). Handles stdio transport and tool registration.
-- `src/index.ts`: Optional HTTP API server for local testing or integration.
-- `src/tools/outsystems-tool.ts`: Defines the `createOutSystemsApp` tool.
 - `src/services/outsystems-api.ts`: Contains the logic for interacting with the OutSystems platform.
 - `src/services/token-manager.ts`: Handles OutSystems API token caching and refresh.
 
