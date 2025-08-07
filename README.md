@@ -37,7 +37,7 @@ The server is built with TypeScript and uses the official `@modelcontextprotocol
 
 1.  Clone the repository:
     ```bash
-    git clone [https://github.com/joaomflcarvalho/OutSystems-mcp-server.git](https://github.com/joaomflcarvalho/OutSystems-mcp-server.git)
+    git clone https://github.com/joaomflcarvalho/OutSystems-mcp-server.git
     cd OutSystems-mcp-server
     ```
 
