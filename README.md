@@ -4,10 +4,7 @@ This is a Model Context Protocol (MCP) server that generates OutSystems applicat
 
 ## Demo
 
-<video controls width="600">
-  <source src="./demos/MCP Server Demo.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+[![Demo Video](./demos/demo.gif)](./demos/MCP%20Server%20Demo.mp4)
 
 ## Architecture
 
