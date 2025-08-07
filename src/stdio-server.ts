@@ -3,10 +3,20 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { createAndDeployApp } from "./services/outsystems-api";
 import { z } from "zod";
+import 'dotenv/config'; // Loads .env automatically (Node 20+ and dotenv 16+)
+import dotenv from 'dotenv';
+import fs from "fs";
 
-// Define input schema inline or re-use your tool's definition
+const errorLogStream = fs.createWriteStream("/Users/joao.carvalho/Projects/outsystems-mcp-server/src/error.log", { flags: "a" });
+process.stderr.write = errorLogStream.write.bind(errorLogStream);
+
+dotenv.config(); 
+
+console.error("Loaded OS_HOSTNAME:", process.env.OS_HOSTNAME);
+
+// Inline or reuse your schema
 export const inputSchemaShape = {
-    prompt: z.string().describe("A prompt with a detailed description of the application..."),
+  prompt: z.string().describe("A prompt with a detailed description of the application..."),
 };
 
 const server = new McpServer({
@@ -15,23 +25,62 @@ const server = new McpServer({
   instructions: "Creates and deploys OutSystems applications from prompts.",
 });
 
-// Optionally, keep your Zod schema for validation elsewhere:
 export const inputSchema = z.object(inputSchemaShape);
 
-// ✅ Passes the raw shape, which is exactly what the SDK expects:
+// --- NEW IMPLEMENTATION: Streaming Progress + Final URL Response ---
 server.tool(
   "createOutSystemsApp",
   "Creates and deploys a complete OutSystems application from a text prompt.",
   inputSchemaShape,
-  async ({ prompt }) => {
-    const result = await createAndDeployApp(prompt);
-    return {
-      content: [
-        { type: "text", text: typeof result === "string" ? result : JSON.stringify(result) }
-      ]
-    };
+  async ({ prompt }, extra: any) => {
+    let lastUrl: string | null = null;
+    let lastText: string | null = null;
+    if (extra.progress) {
+      for await (const step of createAndDeployApp(prompt)) {
+        lastText = step;
+        // Find a URL in the step
+        const urlMatch = step.match(/https:\/\/\S+/);
+        if (urlMatch) {
+          lastUrl = urlMatch[0];
+        }
+        extra.progress({ content: [{ type: 'text', text: step }] });
+      }
+      if (lastUrl) {
+        return {
+          content: [
+            { type: "text", text: "🎉 Application is Live!" },
+            { type: "resource", resource: { uri: lastUrl, text: "Open Application" } }
+          ]
+        };
+      } else {
+        return {
+          content: [{ type: "text", text: lastText || "App creation completed, but URL extraction failed." }]
+        };
+      }
+    } else {
+      // fallback if extra.progress not present
+      let finalMsg = "";
+      for await (const step of createAndDeployApp(prompt)) {
+        finalMsg = step;
+        const urlMatch = step.match(/https:\/\/\S+/);
+        if (urlMatch) lastUrl = urlMatch[0];
+      }
+      if (lastUrl) {
+        return {
+          content: [
+            { type: "text", text: "🎉 Application is Live!" },
+            { type: "resource", resource: { uri: lastUrl, text: "Open Application" } }
+          ]
+        };
+      } else {
+        return {
+          content: [{ type: "text", text: finalMsg || "App creation completed, but URL extraction failed." }]
+        };
+      }
+    }
   }
 );
+
 
 const transport = new StdioServerTransport();
 server.connect(transport);
