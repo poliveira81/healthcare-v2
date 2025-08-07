@@ -18,11 +18,11 @@ export async function getValidOutSystemsToken(): Promise<string> {
 
   // Check if we have a cached token and if it's still valid (with a buffer)
   if (cachedToken && cachedToken.expiresAt > nowInSeconds + TOKEN_EXPIRY_BUFFER_SECONDS) {
-    console.log('Using cached OutSystems token.');
+    console.error('Using cached OutSystems token.');
     return cachedToken.token;
   }
 
-  console.log('Fetching a new OutSystems token...');
+  console.error('Fetching a new OutSystems token...');
   // Your original function returns the token and expiry in seconds
   const accessToken = await getOutsystemsToken();
   
@@ -35,6 +35,6 @@ export async function getValidOutSystemsToken(): Promise<string> {
     expiresAt: expiresAt,
   };
 
-  console.log('Successfully fetched and cached a new token.');
+  console.error('Successfully fetched and cached a new token.');
   return cachedToken.token;
 }

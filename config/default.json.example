@@ -3,7 +3,7 @@
     "outsystems-generator": {
       "command": "node",
       "args": [
-        "/Users/joao.carvalho/Projects/outsystems-mcp-server/dist/stdio-server.js"
+        "/path/to/your/project/OutSystems-mcp-server/dist/stdio-server.js"
       ],
       "env": {
         "OS_HOSTNAME": "your-org-name.outsystems.dev",

@@ -100,7 +100,7 @@ export async function* createAndDeployApp(prompt: string): AsyncGenerator<string
     await triggerGeneration(token, jobId);
     yield "  -> Generation triggered.";
     
-    yield "Step 4/7: Polling for generation completion...";
+    yield "Step 4/7: Polling for generation completion status Done...";
     let applicationKey;
     while (true) {
         jobStatus = await getJobStatus(token, jobId);
@@ -120,7 +120,7 @@ export async function* createAndDeployApp(prompt: string): AsyncGenerator<string
     const publicationKey = await startPublication(token, applicationKey);
     yield `  -> Publication started with Key: ${publicationKey}`;
 
-    yield "Step 6/7: Polling for publication completion...";
+    yield "Step 6/7: Polling for publication completion status Finished...";
     let pubStatus;
     while (true) {
         pubStatus = await getPublicationStatus(token, publicationKey);
