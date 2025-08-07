@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { createAndDeployApp } from '../services/outsystems-api';
 
-const inputSchema = z.object({
+export const inputSchema = z.object({
   prompt: z.string().describe("A prompt with a detailed description of the application..."),
 });
 

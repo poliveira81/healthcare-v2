@@ -22,7 +22,7 @@ server.on("error", (err: Buffer) => {
 // Compose and send the initialize request
 const initializeMsg = {
   jsonrpc: "2.0",
-  id: 0,
+  id: 1,
   method: "initialize",
   params: {
     protocolVersion: "2024-11-05",
@@ -38,26 +38,26 @@ server.stdin.write(JSON.stringify(initializeMsg) + "\n");
 setTimeout(() => {
   const toolExecuteMsg = {
     jsonrpc: "2.0",
-    id: 1,
+    id: 2,
     method: "tool/execute",
     params: {
       tool_name: "createOutSystemsApp",
       executionId: "exec-timetracking-" + Date.now(), // unique per test
       input: {
-        description: "A time tracking app for a software delivery team working on multiple projects."
+        prompt: "A time tracking app for a software delivery team working on multiple projects."
       }
     }
   };
   console.log("[CLIENT] Sending tool/execute:", JSON.stringify(toolExecuteMsg));
   server.stdin.write(JSON.stringify(toolExecuteMsg) + "\n");
-}, 500); // Wait 500ms after initialize (adjust as needed)
+}, 5000); // Wait 500ms after initialize (adjust as needed)
 
 // 3. After another delay, send a shutdown request
 setTimeout(() => {
   console.log("[CLIENT] Sending shutdown request");
 const shutdownMsg = {
   jsonrpc: "2.0",
-  id: 1,
+  id: 3,
   method: "shutdown",
   params: {}
 };
