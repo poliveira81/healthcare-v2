@@ -7,11 +7,11 @@ import "dotenv/config"; // Loads .env automatically (Node 20+ and dotenv 16+)
 import dotenv from "dotenv";
 import fs from "fs";
 
-const errorLogStream = fs.createWriteStream(
+/*const errorLogStream = fs.createWriteStream(
   "/Users/joao.carvalho/Projects/outsystems-mcp-server/src/error.log",
   { flags: "a" }
 );
-process.stderr.write = errorLogStream.write.bind(errorLogStream);
+process.stderr.write = errorLogStream.write.bind(errorLogStream);*/
 
 dotenv.config();
 

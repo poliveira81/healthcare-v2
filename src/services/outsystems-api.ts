@@ -10,6 +10,7 @@ const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 // Step 1: Start the initial job
 async function startGenerationJob(token: string, prompt: string): Promise<string> {
+  //API Documentation: https://backstage.arch.outsystemscloudrd.net/catalog/odc/api/appgeneration.service.openapi.v1alpha3/definition#/Jobs/Jobs_CreateJob
   const apiUrl = `https://${OS_HOSTNAME}/api/app-generation/v1alpha3/jobs`;
   const response = await fetch(apiUrl, {
     method: 'POST',
@@ -24,6 +25,7 @@ async function startGenerationJob(token: string, prompt: string): Promise<string
 
 // Step 2 & 4: Poll the job's status
 async function getJobStatus(token: string, jobId: string): Promise<any> {
+  //API Documentation: https://backstage.arch.outsystemscloudrd.net/catalog/odc/api/appgeneration.service.openapi.v1alpha3/definition#/Jobs/Jobs_GetJob
   const apiUrl = `https://${OS_HOSTNAME}/api/app-generation/v1alpha3/jobs/${jobId}`;
   const response = await fetch(apiUrl, { headers: { 'Authorization': `Bearer ${token}` } });
   if (!response.ok) throw new Error(`API Error (getJobStatus): ${response.status} ${await response.text()}`);
@@ -32,6 +34,7 @@ async function getJobStatus(token: string, jobId: string): Promise<any> {
 
 // Step 3: Trigger the generation phase
 async function triggerGeneration(token: string, jobId: string): Promise<void> {
+  //API Documentation: https://backstage.arch.outsystemscloudrd.net/catalog/odc/api/appgeneration.service.openapi.v1alpha3/definition#/Jobs/Jobs_TriggerJobGeneration
   const apiUrl = `https://${OS_HOSTNAME}/api/app-generation/v1alpha3/jobs/${jobId}/generation`;
   const response = await fetch(apiUrl, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
   if (!response.ok) throw new Error(`API Error (triggerGeneration): ${response.status} ${await response.text()}`);
@@ -39,6 +42,7 @@ async function triggerGeneration(token: string, jobId: string): Promise<void> {
 
 // Step 5: Start the publication process
 async function startPublication(token: string, applicationKey: string): Promise<string> {
+  //API Documentation: https://backstage.arch.outsystemscloudrd.net/catalog/odc/api/publish.service.openapi.v1/definition#/Publications/Publications_Post
     const apiUrl = `https://${OS_HOSTNAME}/api/v1/publications`;
     const response = await fetch(apiUrl, {
         method: 'POST',
@@ -53,6 +57,7 @@ async function startPublication(token: string, applicationKey: string): Promise<
 
 // Step 6: Poll the publication status
 async function getPublicationStatus(token: string, publicationKey: string): Promise<any> {
+  //API Documentation: https://backstage.arch.outsystemscloudrd.net/catalog/odc/api/publish.service.openapi.v1/definition#/Publications/Publications_Get
     const apiUrl = `https://${OS_HOSTNAME}/api/v1/publications/${publicationKey}`;
     const response = await fetch(apiUrl, { headers: { 'Authorization': `Bearer ${token}` } });
     if (!response.ok) throw new Error(`API Error (getPublicationStatus): ${response.status} ${await response.text()}`);
@@ -61,6 +66,7 @@ async function getPublicationStatus(token: string, publicationKey: string): Prom
 
 // Step 7: Get the final application details
 async function getApplicationDetails(token: string, applicationKey: string): Promise<any> {
+  //API Documentation: https://backstage.arch.outsystemscloudrd.net/catalog/odc/api/applicationversioning.service.openapi.v1/definition#/private/Applications_GetApplication
     const apiUrl = `https://${OS_HOSTNAME}/api/v1/applications/${applicationKey}`;
     const response = await fetch(apiUrl, { headers: { 'Authorization': `Bearer ${token}` } });
     if (!response.ok) throw new Error(`API Error (getApplicationDetails): ${response.status} ${await response.text()}`);
